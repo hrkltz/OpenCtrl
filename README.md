@@ -1,2 +1,1 @@
-# ctrlhub.hrkltz.io
-CtrlHub
+# OpenCtrl
