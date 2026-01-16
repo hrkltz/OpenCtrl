@@ -1,4 +1,4 @@
-# OpenCtrl / XIAOESP32S3Core
+# OpenCtrl / Core / XIAOESP32S3Core
 
 A USB HID controller hub for XIAO ESP32S3, providing keyboard, mouse, gamepad, pen, and touch inputs via web API. Displays the IP address on an OLED screen.
 
