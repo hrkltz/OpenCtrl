@@ -1,5 +1,4 @@
 #include "HTTPServerUtil.hpp"
-#include "DisplayUtil.hpp"
 #include "HIDUtil.hpp"
 #include <ArduinoJson.h>
 
@@ -42,11 +41,8 @@ void HTTPServerUtil::Init() {
     // }
     // curl -X POST http://<ESP32_IP>/keyboard -H "Content-Type: application/json" -d '{"modifiers":2,"keys":[4,5,0,0,0,0]}'
     server.on("/keyboard", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &json) {
-      DisplayUtil::Print(7, "A");
       if (json.is<JsonObject>()) {
-        DisplayUtil::Print(7, "AB");
         JsonObject doc = json.as<JsonObject>();
-        DisplayUtil::Print(7, "ABC");
         int modifiers = doc["modifiers"] | 0;
         JsonArray keys = doc["keys"];
         KeyReport report = {0};
@@ -54,10 +50,8 @@ void HTTPServerUtil::Init() {
         for (size_t i = 0; i < keys.size() && i < 6; i++) {
             report.keys[i] = keys[i];
         }
-        DisplayUtil::Print(7, "ABCD");
         HIDUtil::keyboard.sendReport(&report);
         HIDUtil::keyboard.releaseAll();
-        DisplayUtil::Print(7, "ABCDE");
       }
       request->send(200, "text/plain", "Keyboard report received\n");
     });
