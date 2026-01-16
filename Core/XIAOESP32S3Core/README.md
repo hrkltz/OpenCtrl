@@ -2,8 +2,13 @@
 
 A USB HID controller hub for XIAO ESP32S3, providing keyboard, mouse, gamepad, pen, and touch inputs via web API. Displays the IP address on an OLED screen.
 
-## Setup
+## Part List
 
+- 1x [XIAO ESP32S3](https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html)
+- 1x USB-C to USB-C or USB-A cable
+- 1x [Seeed Studio XIAO Expansion Board](https://www.seeedstudio.com/Seeeduino-XIAO-Expansion-board-p-4746.html) (optional)
+
+## Setup
 
 ```bash
 # Get the board package for the XIAO ESP32S3.
