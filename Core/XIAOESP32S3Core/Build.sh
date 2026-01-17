@@ -55,7 +55,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ "$dry" = false ]; then
-    arduino-cli --config-file arduino-cli.yaml upload -p /dev/cu.usbmodem1101 -b esp32:esp32:XIAO_ESP32S3 .
+    arduino-cli --config-file arduino-cli.yaml upload -p /dev/cu.usbmodem2101 -b esp32:esp32:XIAO_ESP32S3 .
     if [ $? -ne 0 ]; then
         echo "Error: Upload failed."
         exit 1

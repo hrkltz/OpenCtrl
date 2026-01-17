@@ -20,7 +20,6 @@ void HTTPServerUtil::Init() {
     //   "wheel": 0,
     //   "buttons": 1
     // }
-    // curl -X POST http://<ESP32_IP>/mouse -H "Content-Type: application/json" -d '{"dx":10,"dy":-5,"wheel":0,"buttons":1}'
     server.on("/mouse", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &json) {
       if (json.is<JsonObject>()) {
         JsonObject doc = json.as<JsonObject>();
@@ -39,7 +38,6 @@ void HTTPServerUtil::Init() {
     //   "modifiers": 2,
     //   "keys": [4, 5, 0, 0, 0, 0]
     // }
-    // curl -X POST http://<ESP32_IP>/keyboard -H "Content-Type: application/json" -d '{"modifiers":2,"keys":[4,5,0,0,0,0]}'
     server.on("/keyboard", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &json) {
       if (json.is<JsonObject>()) {
         JsonObject doc = json.as<JsonObject>();
@@ -68,7 +66,6 @@ void HTTPServerUtil::Init() {
     //   "rightTrigger": 0,
     //   "hat": 0
     // }
-    // curl -X POST http://<ESP32_IP>/gamepad -H "Content-Type: application/json" -d '{"buttons":1,"leftX":0,"leftY":0,"rightX":0,"rightY":0,"leftTrigger":0,"rightTrigger":0,"hat":0}'
     server.on("/gamepad", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &json){ 
       if (json.is<JsonObject>()) {
         JsonObject doc = json.as<JsonObject>();
