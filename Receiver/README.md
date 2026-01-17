@@ -24,7 +24,7 @@ user@device Receiver % python3 -m pip install -r "requirements.txt"
 ```zsh
 # Use '--catch' to suppress events so the OS won't handle them while logging.
 # Caution: with suppression enabled, normal input may be blocked and might force you kill your computer with the power switch. The keyboad button 'q' is implemented to act as an kill-switch.
-./Run.sh
+./Run.sh --type keyboard
 ```
 
 >Note: If the script fails to create an event tap, grant Accessibility permission:
