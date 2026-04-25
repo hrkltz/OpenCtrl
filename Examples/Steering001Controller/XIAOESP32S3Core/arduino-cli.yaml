@@ -3,13 +3,11 @@ board_manager:
     - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
 directories:
-  data: ./data
-  downloads: ./downloads
-  user: ./user
+  data: ../../../.arduino/data
+  downloads: ../../../.arduino/downloads
+  user: ../../../.arduino/user
   builtin:
-    libraries: ./builtin-libraries
-
-sketchbook_path: ./sketchbook
+    libraries: ../../../.arduino/builtin-libraries
 
 library:
   enable_unsafe_install: true

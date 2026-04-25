@@ -1,5 +1,20 @@
 .DS_Store
 
+# Arduino CLI local state. These directories can become very large and are
+# recreated by the setup commands in each core README.
+.arduino/
 data/
 downloads/
 user/
+
+# Python local state.
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+*.py[cod]
+*.pyd
+*.so

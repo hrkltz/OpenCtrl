@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenCtrl / Receiver / Mouse Logger
+OpenCtrl / Test / Mouse Logger
 
 A macOS mouse event logger using CGEventTap.
 This script captures and logs mouse events in real-time.

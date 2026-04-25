@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenCtrl / Receiver / Keyboard Logger
+OpenCtrl / Test / Keyboard Logger
 
 A macOS keyboard event logger using CGEventTap.
 This script captures and logs keyboard events in real-time.

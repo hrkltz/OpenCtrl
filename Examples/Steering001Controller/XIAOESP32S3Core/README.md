@@ -1,4 +1,4 @@
-# OpenCtrl / Controller/ Steering001Controller / XIAOESP32S3Core
+# OpenCtrl / Examples / Steering001Controller / XIAOESP32S3Core
 
 This is the first version of a controller styled steering wheel controller to be used on the couche. As a first prototype the physical parts are done with LEGO Technic parts and some custom 3D prints for mounting the electronic components.
 

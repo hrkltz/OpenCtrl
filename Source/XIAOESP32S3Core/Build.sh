@@ -10,6 +10,9 @@
 # Default flags
 clean_flag=""
 dry=false
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+cd "$script_dir" || exit 1
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -55,6 +58,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ "$dry" = false ]; then
+
     SCRIPT_MCU_DEV_PORT=$(ls /dev/cu.usbmodem* 2>/dev/null | head -n 1)
     if [ -z "$SCRIPT_MCU_DEV_PORT" ]; then
         echo "Error: No /dev/cu.usbmodem* device found."
