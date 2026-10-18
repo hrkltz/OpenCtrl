@@ -40,3 +40,12 @@ void DisplayUtil::PrintHeap(int pHeap) {
   _mU8x8.print("Heap:");
   _mU8x8.print(pHeap);
 }
+
+void DisplayUtil::PrintError(const char* pErrorText) {
+  _mU8x8.setFont(u8x8_font_chroma48medium8_r);
+  _mU8x8.clear();
+  _mU8x8.setCursor(0, 1);
+  _mU8x8.print("ERROR:");
+  _mU8x8.setCursor(0, 2);
+  _mU8x8.print(pErrorText);
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Drive Sim</title>
+    <style>
+        main {
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .wheel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        [data-steering] {
+            width: min(65vmin, 420px);
+            height: min(65vmin, 420px);
+            color: var(--button);
+        }
+        [data-steering] svg {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .wheel button {
+            height: min(30vmin, 160px);
+        }
+        .pedals {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+        }
+        [data-fader] {
+            --width: min(20vmin, 110px);
+            --height: min(60vmin, 360px);
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>Drive Sim</strong>
+        <span data-status>Ready</span>
+    </header>
+    <div class=landscape-hint>Rotate your device for the best layout.</div>
+    <main>
+        <div class=wheel>
+            <button data-button=6>&minus;</button>
+            <div data-steering=x>
+                <svg viewBox="0 0 100 100" fill=none stroke=currentColor>
+                    <circle cx=50 cy=50 r=44 stroke-width=8 />
+                    <circle cx=50 cy=50 r=10 fill=currentColor />
+                    <path d="M6 50 H40 M60 50 H94 M50 60 V94" stroke-width=7 />
+                    <path d="M50 2 V12" stroke=red stroke-width=6 />
+                </svg>
+            </div>
+            <button data-button=7>+</button>
+        </div>
+        <div class=pedals>
+            <div data-fader=z data-spring=-127>Brake</div>
+            <div data-fader=rz data-spring=-127>Gas</div>
+        </div>
+    </main>
+</body>
+</html>

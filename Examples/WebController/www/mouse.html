@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Mouse</title>
+    <style>
+        main {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .surface {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            gap: 8px;
+        }
+        [data-touchpad] {
+            flex: 1 1 auto;
+        }
+        [data-scrollpad] {
+            flex: 0 0 64px;
+            writing-mode: vertical-lr;
+        }
+        .buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .buttons button {
+            flex: 1 1 0;
+            height: 64px;
+        }
+        .buttons .wide {
+            flex-grow: 2;
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong data-mouse-name>Mouse</strong>
+        <a href=mouse.html data-primary-mouse hidden>Primary mouse</a>
+        <a href="mouse.html?mouse=secondary" data-secondary-mouse hidden>Bluetooth mouse</a>
+        <span data-status>Ready</span>
+    </header>
+    <main>
+        <div class=surface>
+            <div data-touchpad>Drag to move, tap to click</div>
+            <div data-scrollpad>Scroll</div>
+        </div>
+        <div class=buttons>
+            <button class=wide data-mouse=1>Left</button>
+            <button data-mouse=4>Middle</button>
+            <button class=wide data-mouse=2>Right</button>
+            <button data-mouse-hold=1>Hold</button>
+        </div>
+    </main>
+</body>
+</html>

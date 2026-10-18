@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl</title>
+    <style>
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: var(--surface);
+        }
+        h2 {
+            margin: 0 0 4px;
+            font-size: 18px;
+        }
+        nav {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        nav a {
+            padding: 16px;
+            border-radius: 8px;
+            background-color: var(--surface);
+            color: var(--text);
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+        }
+        input[type=text] {
+            flex: 1 1 160px;
+        }
+        [data-touchpad] {
+            height: 200px;
+        }
+        .sticks {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 16px;
+        }
+        [data-fader] {
+            --width: calc(50% - 4px);
+            --height: 44px;
+        }
+        #gamepad-buttons {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+        }
+        #gamepad-buttons button {
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <strong>OpenCtrl</strong>
+        <span data-status>Ready</span>
+    </header>
+    <main>
+        <nav>
+            <a href=joystick.html>Joystick</a>
+            <a href=slider.html>Slider</a>
+            <a href=keyboard.html>Keyboard</a>
+            <a href=mouse.html>Mouse</a>
+            <a href="mouse.html?mouse=secondary" data-secondary-mouse hidden>Bluetooth Mouse</a>
+            <a href=pencil.html>Pencil</a>
+            <a href=drive.html>Drive Sim</a>
+            <a href=fly.html>Fly Sim</a>
+            <a href=xbox.html>Xbox</a>
+            <a href=ps5.html>PS5</a>
+        </nav>
+
+        <section>
+            <h2>Keyboard</h2>
+            <div class=row>
+                <input id=text type=text placeholder="Text to type" autocomplete=off autocapitalize=off spellcheck=false>
+                <button data-type=text>Type</button>
+            </div>
+            <div class=row>
+                <button data-modifier=1>Ctrl</button>
+                <button data-modifier=2>Shift</button>
+                <button data-modifier=4>Alt</button>
+                <button data-modifier=8>GUI</button>
+            </div>
+            <div class=row>
+                <button data-key=41>Esc</button>
+                <button data-key=43>Tab</button>
+                <button data-key=42>Backspace</button>
+                <button data-key=40>Enter</button>
+                <button data-key=44>Space</button>
+            </div>
+            <div class=row>
+                <button data-key=80>&larr;</button>
+                <button data-key=82>&uarr;</button>
+                <button data-key=81>&darr;</button>
+                <button data-key=79>&rarr;</button>
+            </div>
+            <small>Modifiers apply to the next key press. Text is typed for a US keyboard layout on the host.</small>
+        </section>
+
+        <section>
+            <h2>Mouse</h2>
+            <div data-touchpad>Drag to move, tap to click</div>
+            <div class=row>
+                <button data-mouse=1>Left</button>
+                <button data-mouse=4>Middle</button>
+                <button data-mouse=2>Right</button>
+                <button data-mouse-hold=1>Hold left</button>
+                <button data-wheel=1>Wheel &uarr;</button>
+                <button data-wheel=-1>Wheel &darr;</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>Gamepad</h2>
+            <div class=sticks>
+                <div class=column>
+                    <div data-stick="x y"></div>
+                    <small>Left stick</small>
+                </div>
+                <div data-hatpad></div>
+                <div class=column>
+                    <div data-stick="rx ry"></div>
+                    <small>Right stick</small>
+                </div>
+            </div>
+            <div class=row>
+                <div data-fader=z data-horizontal data-spring=-127>LT</div>
+                <div data-fader=rz data-horizontal data-spring=-127>RT</div>
+            </div>
+            <div id=gamepad-buttons></div>
+        </section>
+
+        <section>
+            <h2>Media</h2>
+            <div class=row>
+                <button data-consumer=0xB6>Previous</button>
+                <button data-consumer=0xCD>Play/Pause</button>
+                <button data-consumer=0xB5>Next</button>
+                <button data-consumer=0xB7>Stop</button>
+            </div>
+            <div class=row>
+                <button data-consumer=0xE2>Mute</button>
+                <button data-consumer=0xEA>Volume &minus;</button>
+                <button data-consumer=0xE9>Volume +</button>
+            </div>
+            <div class=row>
+                <button data-consumer=0x70>Brightness &minus;</button>
+                <button data-consumer=0x6F>Brightness +</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>System</h2>
+            <div class=row>
+                <button class=danger data-system=1 data-confirm="Power off the host?">Power off</button>
+                <button class=danger data-system=2 data-confirm="Put the host to sleep?">Sleep</button>
+                <button data-system=3>Wake host</button>
+            </div>
+            <small>These act on the computer the controller is plugged into.</small>
+        </section>
+    </main>
+    <script>
+        // All 32 gamepad buttons.
+        const gamepadButtons = document.getElementById('gamepad-buttons');
+        for (let i = 0; i < 32; i++) {
+            const button = document.createElement('button');
+            button.textContent = i + 1;
+            button.dataset.button = i;
+            gamepadButtons.append(button);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Slider</title>
+    <style>
+        main {
+            flex-direction: column;
+        }
+        .sliders {
+            flex: 1 1 auto;
+            min-height: 0;
+            align-self: stretch;
+            display: flex;
+            gap: min(3vw, 24px);
+        }
+        .sliders [data-fader] {
+            flex: 1 1 0;
+            height: auto;
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>Slider</strong>
+        <span data-status>Ready</span>
+    </header>
+    <main>
+        <div class=sliders>
+            <div data-fader=x>X</div>
+            <div data-fader=y>Y</div>
+            <div data-fader=z>Z</div>
+            <div data-fader=rx>RX</div>
+            <div data-fader=ry>RY</div>
+            <div data-fader=rz>RZ</div>
+        </div>
+        <button id=center>Center all</button>
+    </main>
+    <script>
+        document.getElementById('center').addEventListener('click', () => {
+            document.querySelectorAll('[data-fader]').forEach((fader) => fader.style.setProperty('--amount', 0.5));
+            setGamepad({ x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 });
+        });
+    </script>
+</body>
+</html>

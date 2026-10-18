@@ -17,4 +17,5 @@ class DisplayUtil {
       static void PrintIP(const char* pIP);
       static void PrintConnectionStatus(const char* pConnectionStatus);
       static void PrintHeap(int pHeap);
+      static void PrintError(const char* pErrorText);
 };

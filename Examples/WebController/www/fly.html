@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Fly Sim</title>
+    <style>
+        main {
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .throttle {
+            --width: min(16vmin, 80px);
+            --height: min(68vmin, 400px);
+        }
+        [data-stick] {
+            --size: min(50vmin, 340px);
+        }
+        .rudder {
+            --width: min(50vmin, 340px);
+            --height: 40px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .buttons button {
+            height: min(14vmin, 72px);
+        }
+        [data-hatpad] {
+            --size: min(10vmin, 56px);
+        }
+        @media (orientation: portrait) {
+            .throttle {
+                --height: min(52vmin, 400px);
+            }
+            [data-stick] {
+                --size: min(44vmin, 340px);
+            }
+            .rudder {
+                --width: min(44vmin, 340px);
+            }
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>Fly Sim</strong>
+        <span data-status>Ready</span>
+    </header>
+    <div class=landscape-hint>Rotate your device for the best layout.</div>
+    <main>
+        <div class=throttle data-fader=z data-value=-127>Throttle</div>
+        <div class=column>
+            <div data-stick="x y"></div>
+            <div class=rudder data-fader=rz data-horizontal data-spring=0>Rudder</div>
+        </div>
+        <div class=controls>
+            <div data-hatpad></div>
+            <div class=buttons>
+                <button data-button=0>Fire</button>
+                <button data-button=1>2</button>
+                <button data-button=2>3</button>
+                <button data-button=3>4</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

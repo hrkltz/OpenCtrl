@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Keyboard</title>
+    <style>
+        main {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        main > .row {
+            flex-wrap: nowrap;
+        }
+        input[type=text] {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        #keyboard {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        #keyboard > div {
+            flex: 1 1 0;
+            display: flex;
+            gap: 4px;
+        }
+        #keyboard button {
+            flex: var(--width, 1) 1 0;
+            min-width: 0;
+            padding: 0;
+            font-size: clamp(11px, 2.2vw, 18px);
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>Keyboard</strong>
+        <span data-status>Ready</span>
+    </header>
+    <div class=landscape-hint>Rotate your device for bigger keys.</div>
+    <main>
+        <div class=row>
+            <input id=text type=text placeholder="Text to type" autocomplete=off autocapitalize=off spellcheck=false>
+            <button data-type=text>Type</button>
+        </div>
+        <div id=keyboard></div>
+    </main>
+    <script>
+        // US layout rows: [label, usage, width]. A modifier bit instead of a usage makes a sticky modifier.
+        const modifier = (bit) => ({ modifier: bit });
+        const rows = [
+            [['Esc', 41], ['F1', 58], ['F2', 59], ['F3', 60], ['F4', 61], ['F5', 62], ['F6', 63], ['F7', 64], ['F8', 65], ['F9', 66], ['F10', 67], ['F11', 68], ['F12', 69], ['Del', 76]],
+            [['`', 53], ['1', 30], ['2', 31], ['3', 32], ['4', 33], ['5', 34], ['6', 35], ['7', 36], ['8', 37], ['9', 38], ['0', 39], ['-', 45], ['=', 46], ['&#9003;', 42, 1.5]],
+            [['Tab', 43, 1.5], ['Q', 20], ['W', 26], ['E', 8], ['R', 21], ['T', 23], ['Y', 28], ['U', 24], ['I', 12], ['O', 18], ['P', 19], ['[', 47], [']', 48], ['\\', 49]],
+            [['Caps', 57, 1.75], ['A', 4], ['S', 22], ['D', 7], ['F', 9], ['G', 10], ['H', 11], ['J', 13], ['K', 14], ['L', 15], [';', 51], ["'", 52], ['Enter', 40, 1.75]],
+            [['Shift', modifier(2), 2.25], ['Z', 29], ['X', 27], ['C', 6], ['V', 25], ['B', 5], ['N', 17], ['M', 16], [',', 54], ['.', 55], ['/', 56], ['&uarr;', 82], ['Home', 74]],
+            [['Ctrl', modifier(1), 1.5], ['GUI', modifier(8), 1.25], ['Alt', modifier(4), 1.25], ['Space', 44, 5], ['&larr;', 80], ['&darr;', 81], ['&rarr;', 79], ['End', 77]],
+        ];
+        const keyboard = document.getElementById('keyboard');
+        for (const row of rows) {
+            const rowElement = document.createElement('div');
+            for (const [label, key, width = 1] of row) {
+                const button = document.createElement('button');
+                button.innerHTML = label;
+                button.style.setProperty('--width', width);
+                if (typeof key === 'number') button.dataset.key = key;
+                else button.dataset.modifier = key.modifier;
+                rowElement.append(button);
+            }
+            keyboard.append(rowElement);
+        }
+    </script>
+</body>
+</html>

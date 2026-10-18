@@ -11,8 +11,14 @@ This is the first version of a controller styled steering wheel controller to be
 
 ## Setup
 
-This version is based on the general XIA ESP32-S3 implementation. It just requires an additional lib for handling the 3D Hall effect sensor.
+This version is based on the general [XIAOESP32S3Core](../../../Source/XIAOESP32S3Core). Set it up first, then install the additional lib for handling the 3D Hall effect sensor.
 
 ```bash
-arduino-cli --config-file arduino-cli.yaml lib install "SparkFun TMAG5273 Arduino Library@2.0.0"
+arduino-cli --config-file ../../../Source/XIAOESP32S3Core/arduino-cli.yaml lib install "SparkFun TMAG5273 Arduino Library@2.0.0"
 ```
+
+## Usage
+
+Run `./BuildAndDeploy.sh --project Examples/Steering001Controller` from the root folder to compile and upload.
+
+The web API requires the 0–99 pairing code displayed on the OLED or USB serial console, as described in the [core API](../../../Source/XIAOESP32S3Core/README.md#usage). This short code is for trusted local networks only.

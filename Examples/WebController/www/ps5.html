@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl PS5</title>
+    <style>
+        body.view main.gamepad {
+            grid-template-areas:
+                "left-shoulder left-shoulder . right-shoulder right-shoulder"
+                "dpad . center . face"
+                ". left-stick center right-stick .";
+        }
+        @media (orientation: portrait) {
+            body.view main.gamepad {
+                grid-template-areas:
+                    "left-shoulder right-shoulder"
+                    "dpad face"
+                    "left-stick right-stick"
+                    "center center";
+            }
+        }
+        .face .cross { color: #7aa7ff; }
+        .face .circle { color: #ff6b6b; }
+        .face .square { color: #f48fb1; }
+        .face .triangle { color: #4dd0b0; }
+        .gamepad .center .touchpad {
+            width: min(30vmin, 200px);
+            height: min(14vmin, 100px);
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>PS5</strong>
+        <span data-status>Ready</span>
+    </header>
+    <div class=landscape-hint>Rotate your device for the best layout.</div>
+    <main class=gamepad>
+        <div class=shoulder style="grid-area: left-shoulder">
+            <div data-fader=z data-spring=-127>L2</div>
+            <button data-button=6>L1</button>
+        </div>
+        <div class=shoulder style="grid-area: right-shoulder">
+            <button data-button=7>R1</button>
+            <div data-fader=rz data-spring=-127>R2</div>
+        </div>
+        <div data-hatpad style="grid-area: dpad"></div>
+        <div class=center style="grid-area: center">
+            <div class=row>
+                <button data-button=10>Create</button>
+                <button data-button=11>Options</button>
+            </div>
+            <button class=touchpad data-button=2>Touchpad</button>
+            <button data-button=12>PS</button>
+            <small>Double-tap a stick to click it</small>
+        </div>
+        <div class=face style="grid-area: face">
+            <button class="top triangle" data-button=4>&#9651;</button>
+            <button class="left square" data-button=3>&#9633;</button>
+            <button class="right circle" data-button=1>&#9675;</button>
+            <button class="bottom cross" data-button=0>&#10005;</button>
+        </div>
+        <div style="grid-area: left-stick" data-stick="x y" data-stick-button=13></div>
+        <div style="grid-area: right-stick" data-stick="rx ry" data-stick-button=14></div>
+    </main>
+</body>
+</html>

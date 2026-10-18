@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=mobile-web-app-capable content=yes>
+    <link rel=icon href=data:,>
+    <link rel=stylesheet href=openctrl.css>
+    <script src=openctrl.js></script>
+    <title>OpenCtrl Joystick</title>
+    <style>
+        main {
+            flex-wrap: wrap;
+        }
+        [data-stick] {
+            --size: min(70vmin, 420px);
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .buttons button {
+            width: min(18vmin, 110px);
+            height: min(18vmin, 110px);
+            border-radius: 50%;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body class=view>
+    <header>
+        <a href=index.html>&larr; OpenCtrl</a>
+        <strong>Joystick</strong>
+        <span data-status>Ready</span>
+    </header>
+    <main>
+        <div data-stick="x y"></div>
+        <div class=buttons>
+            <button data-button=0>1</button>
+            <button data-button=1>2</button>
+            <button data-button=2>3</button>
+            <button data-button=3>4</button>
+        </div>
+    </main>
+</body>
+</html>
