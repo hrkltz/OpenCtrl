@@ -9,18 +9,11 @@
 // Include the route implementation so its watchdog can be exercised with a fake
 // clock, without starting an RTOS task or waiting two real seconds per case.
 #include "../Source/XIAOESP32S3Core/HTTPServerUtil.cpp"
-void DisplayUtil::Print(uint8_t, const char*) {}
 
-void assertPairingCode() {
-    const char* code = HTTPServerUtil::GetPairingToken();
-    assert(code && code[0] && std::strlen(code) <= 2);
-    for (const char* digit = code; *digit; ++digit) assert(*digit >= '0' && *digit <= '9');
-    assert(std::strtol(code, nullptr, 10) <= 99);
-}
 
-int call(const char* path, const char* json, const char* session = "11111111111111111111111111111111", bool authorized = true) {
+
+int call(const char* path, const char* json, const char* session = "11111111111111111111111111111111") {
     AsyncWebServerRequest request;
-    if (authorized) request.headers["Authorization"] = std::string("Bearer ") + HTTPServerUtil::GetPairingToken();
     request.headers["X-OpenCtrl-Session"] = session;
     JsonDocument doc;
     assert(!deserializeJson(doc, json));
@@ -46,7 +39,6 @@ int main(int argc, char** argv) {
         assert(HIDUtil::InputSize(2)==(customOnly ? 0 : 5));
         assert(HIDUtil::InputSize(7)==(customOnly ? 1 : 0));
         assert(HTTPServerUtil::Init());
-        assertPairingCode();
         assert(!AsyncWebServer::routes.count("/keyboard") && !AsyncWebServer::routes.count("/gamepad"));
         assert(AsyncWebServer::routes.count("/mouse")==size_t(!customOnly));
         assert(call("/hid/report","{\"id\":30,\"data\":[0]}")==404);
@@ -175,8 +167,7 @@ int main(int argc, char** argv) {
     HIDUtil::Service();
     assert(HIDUtil::SendGamepad(0,0,0,0,0,0,0,0));
     assert(HTTPServerUtil::Init());
-    assertPairingCode();
-    assert(call("/keyboard","{}","11111111111111111111111111111111",false)==401);
+    assert(call("/keyboard","{}") == 200); // No pairing or Authorization header.
     assert(call("/keyboard","{}","bad-session")==400);
     assert(call("/keyboard","{\"keys\":[4]}")==200);
     assert(USBMock::sent.back().data[2]==4); // No automatic key-up.
@@ -213,5 +204,5 @@ int main(int argc, char** argv) {
     mockMillis+=2100; expireSession(); assert(owner.empty());
     assert(call("/heartbeat","{}")==200);
     assert(call("/release","{}")==200 && owner.empty());
-    std::cout << "HID descriptor, transmission, validation, pairing, and watchdog tests passed\n";
+    std::cout << "HID descriptor, transmission, validation, sessions, and watchdog tests passed\n";
 }

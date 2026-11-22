@@ -11,6 +11,7 @@ HIDPen pen;
 static void sendWebFile(AsyncWebServerRequest* request, const WebFile& file) {
   AsyncWebServerResponse* response = request->beginResponse(200, file.contentType, file.data, file.size);
   response->addHeader("Cache-Control", "no-cache");
+  if (file.gzip) response->addHeader("Content-Encoding", "gzip");
   request->send(response);
 }
 

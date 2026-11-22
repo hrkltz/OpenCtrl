@@ -127,22 +127,21 @@ if [ -n "$port" ]; then
         echo "==> Found board on $port (already in flash mode)."
     else
         echo "==> Found board on $port (application mode). Sending reset command to enter flash mode..."
-        if trigger_bootloader_reset "$port"; then
-            echo "==> Waiting for board to reboot into flash mode..."
-            for _ in {1..30}; do
-                sleep 0.25
-                new_port="$(find_serial_port)"
-                if [ -n "$new_port" ] && { is_bootloader_mode || [ "$new_port" != "$port" ]; }; then
-                    port="$new_port"
-                    break
-                fi
-            done
-            port="$(find_serial_port)"
-            if [ -n "$port" ]; then
-                echo "==> Board ready on $port."
+        # A successful reset removes the port mid-sequence, which makes the helper fail,
+        # so wait for the board either way.
+        trigger_bootloader_reset "$port" || echo "==> Reset command ended early; the board may already be rebooting."
+        echo "==> Waiting for board to reboot into flash mode..."
+        for _ in {1..30}; do
+            sleep 0.25
+            new_port="$(find_serial_port)"
+            if [ -n "$new_port" ] && { is_bootloader_mode || [ "$new_port" != "$port" ]; }; then
+                port="$new_port"
+                break
             fi
-        else
-            echo "==> Warning: Could not send software reset command to $port."
+        done
+        port="$(find_serial_port)"
+        if [ -n "$port" ]; then
+            echo "==> Board ready on $port."
         fi
     fi
 fi

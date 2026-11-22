@@ -17,8 +17,15 @@ public:
     size_t write(const uint8_t* value, size_t length) { append(reinterpret_cast<const char*>(value), length); return length; }
 };
 inline uint32_t mockMillis = 0;
+inline uint32_t mockMicrosecondRemainder = 0;
 inline uint32_t millis() { return mockMillis; }
+inline uint32_t micros() { return mockMillis * 1000u + mockMicrosecondRemainder; }
 inline void delay(uint32_t value) { mockMillis += value; }
+inline void delayMicroseconds(uint32_t value) {
+    const uint64_t total = uint64_t(mockMicrosecondRemainder) + value;
+    mockMillis += uint32_t(total / 1000);
+    mockMicrosecondRemainder = uint32_t(total % 1000);
+}
 constexpr int SDA = 5, SCL = 6;
 struct MockConsole {
     void begin(unsigned long) {}

@@ -1,0 +1,276 @@
+/* Design tokens — the single palette every Siegel component and app style reads.
+ *
+ * Two layers:
+ *
+ *   1. Palette tokens — raw brand values, defined per theme (light default,
+ *      dark via the OS preference, dark forced via data-theme). Apps rebrand
+ *      by overriding *these* in their own shell stylesheet, after this sheet.
+ *   2. Semantic tokens — what components actually use (--surface, --text-muted,
+ *      --hover, …). Defined once, derived from the palette, so they re-resolve
+ *      for whichever theme is active. Apps rarely need to touch this layer.
+ *
+ * Theme selection contract (see theme-boot.js / lib/theme.js):
+ *   - no data-theme on <html>  → System: the prefers-color-scheme query decides
+ *   - data-theme="light"/"dark" → forced, overriding the OS preference
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---- palette: light (default) ----
+     Two tones, one relationship: --page is the CANVAS everything sits on, and
+     --panel is what is RAISED off it (panel cards, popovers, dialogs, toasts).
+     The app frame itself — rail, rail-nav, top/bottom bars — paints no background
+     at all, so the canvas shows through and the cards are the only lit surfaces.
+     Dark theme keeps the same relationship, near-black canvas under slightly
+     lighter panels. Never reintroduce a background on app-level chrome: it is what
+     makes a card read as a card. */
+  --page: color(srgb 0.9513 0.9613 0.9698);  /* the canvas */
+  --panel: #ffffff;                /* raised: panel cards, popovers, dialogs */
+  --border: #e5e7eb;               /* hairline dividers */
+  --foreground: #111827;           /* primary text */
+  --control-pressed-foreground: #000000; /* neutral pressed control content */
+  --secondary: #6b7280;            /* supporting text */
+  --primary: var(--accent);        /* filled call-to-action; overridable independently */
+  --primary-foreground: var(--accent-foreground);
+  --accent: #2563eb;               /* selection, focus, active highlights */
+  --accent-foreground: #ffffff;    /* text/glyphs on an --accent fill */
+  --good: #15803d;
+  --warning: #996f00;
+  --error: #c8102e;
+
+  /* ---- semantic layer: derived, theme-agnostic ---- */
+  --bg: var(--page);
+  --surface: var(--panel);
+  --surface-hover: color-mix(in srgb, var(--foreground) 7%, var(--panel));
+  --table-row-stripe: color-mix(in srgb, var(--foreground) 3%, var(--surface));
+  /* Fields sit ON a raised panel, recessed in the canvas tone. Kept separate
+     from --bg so an app can retune fields without moving the canvas.
+     Buttons use their own neutral/semantic fills in buttonStyles(). */
+  --control-bg: var(--page);
+  --control-bg-hover: color-mix(in srgb, var(--foreground) 7%, var(--control-bg));
+  --hover: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --selected: color-mix(in srgb, var(--accent) 16%, transparent);
+  /* FleetManager's table blues, opaque so a sticky heading, a pinned cell or the
+     row-action strip can wear them without the columns showing through: the heading
+     (and the selection bar that takes its place), a row under the pointer or ticked,
+     and the selection count. The dark theme redefines all three. */
+  --table-header: #f8fafd;
+  --row-hover: #f7faff;
+  --table-selection-text: #345d99;
+  /* Navigation under the pointer: rail items and navigating rows. FleetManager's wash. */
+  --nav-hover: #edf4ff;
+  --text: var(--foreground);
+  --text-muted: var(--secondary);
+  --divider: var(--border);
+  --control-border: color-mix(in srgb, var(--foreground) 22%, transparent);
+  --accent-hover: color-mix(in srgb, var(--accent) 84%, var(--foreground));
+  --danger: var(--error);
+  /* Shadows keep dark ink in both themes; text colors invert in dark mode. */
+  --shadow-color: #111827;
+
+  /* Mouse geometry; a coarse pointer switches to touch below. Keep both in step
+     with utilities/density.js. */
+  --ctl-h: 32px;
+  --ctl-font-size: 13px;
+  --button-font-size: 11px;
+  --icon-size: 16px;
+  --ctl-pad-x: 8px;
+  --ctl-pad-y: 3px;
+  --ctl-gap: 6px;
+  --panel-pad: 16px;
+  --panel-gap: 12px;
+  --frame-pad: 6px;
+  --app-edge: 44px;
+  --ctl-radius: 4px;
+  --icon-btn-size: 24px;
+  --switch-h: 20px;
+  --bar-h: 44px;
+  --row-h: 32px;
+  --select-rail-pad: 3px;
+  --rail-icon-size: 18px;
+
+  /* The fixed-width stack, for the places where the glyph grid IS the meaning:
+     ids, keys, hashes, SQL, JSON, a script. One token because it was otherwise
+     retyped inline at every such site (three apps had their own copy of this
+     exact list), and because <siegel-monaco> hands it to Monaco as a font
+     option — retuning the token retunes the editor with everything else. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --button-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Popover/tooltip stacking scale — centralized so layers stay ordered as
+     more of them appear (see the components that reference each): the icon rail
+     lifts above page content, its scrim sits just under its popover, sticky
+     chrome (topbars, table headers) above that, and a chart tooltip on top so
+     it clears every panel it escapes. */
+  --z-rail: 5;
+  --z-scrim: 9;
+  --z-popover: 10;
+  --z-sticky: 20;
+  /* An app-frame region lying OVER the centre on a small frame (<siegel-app>).
+     Above sticky chrome, because a drawer that slid out from under a table's
+     own sticky header would be half a drawer; below the tooltip, which has to
+     clear everything. */
+  --z-app-region: 25;
+  --z-tooltip: 30;
+  --z-toast: 40;
+
+  /* THE floating-surface chrome: every popover, flyout, and tooltip wears the
+     panel card's own tones (--surface fill, --divider hairline, 8px radius)
+     plus this one slight elevation — a hairline contact shadow and a soft
+     short falloff, same in both themes. One token, so the date-picker calendar, a
+     chart's legend flyout and its hover tooltip can never drift apart again. */
+  --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* Charts own their palettes. These deliberately do not alias accent, good,
+     warning, error, or other UI semantics: data categories are not statuses —
+     and each slot keeps ≥25° OKLab hue distance from all four of those anchors,
+     so a series never READS as one either (the old amber slot sat on top of
+     warning). Derived at the gap-center hues between the anchors and validated
+     per theme (OKLCH lightness band, chroma floor, adjacent-pair CVD separation,
+     ≥3:1 contrast on the card surface); the same hue family holds each slot in
+     both themes, each theme picks its own lightness. The warm slot (--chart-3)
+     is a sienna on purpose: a brighter orange lands too close to error/warning.
+     The shades ramp below is ordinal by design. */
+  --chart-1: #1296ab;
+  --chart-2: #802180;
+  --chart-3: #803d05;
+  --chart-4: #169b86;
+  --chart-5: #8158ca;
+  /* The folded "Other" series (siegel-chart sums series 6+ into it) wears a
+     deliberate neutral instead of a palette slot: grey says "everyone else",
+     and the four named series keep the four strongest hues. */
+  --chart-other: #64748b;
+  /* The single base color of palette="mono", where every entry shares one hue
+     and a surface-colored hairline separates the parts — so a chart is no longer
+     capped at the five slots. It aliases the primary chart color (and re-resolves
+     per theme with it); override it alone to give mono charts their own tone. */
+  --chart-mono: var(--chart-1);
+  --chart-shade-1: #312e81;
+  --chart-shade-2: #4338ca;
+  --chart-shade-3: #6366f1;
+  --chart-shade-4: #818cf8;
+  --chart-shade-5: #c7d2fe;
+}
+
+/* Touch geometry: the input device decides, never the viewport width. */
+@media (pointer: coarse) {
+  :root {
+    --ctl-h: 44px;
+    --ctl-font-size: 16px;
+    --button-font-size: 16px;
+    --icon-size: 20px;
+    --ctl-pad-x: 12px;
+    --ctl-pad-y: 6px;
+    --ctl-gap: 8px;
+    --app-edge: 56px;
+    --ctl-radius: 6px;
+    --icon-btn-size: 40px;
+    --switch-h: 28px;
+    --bar-h: 56px;
+    --row-h: 44px;
+    --select-rail-pad: 4px;
+    --rail-icon-size: 24px;
+  }
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --page: #09090b;              /* near-black canvas */
+    --panel: #18181b;             /* slightly lighter: the raised cards */
+    --border: #27272a;
+    --foreground: #f9fafb;
+    --control-pressed-foreground: #ffffff;
+    --secondary: #a1a1aa;
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --accent: #60a5fa;
+    --nav-hover: #1e2a3b;
+    --table-header: color-mix(in srgb, var(--foreground) 7%, var(--panel));
+    --row-hover: color-mix(in srgb, var(--accent) 8%, var(--panel));
+    --table-selection-text: var(--accent);
+    --accent-foreground: #0b1120;
+    --good: #4ade80;
+    --warning: #facc15;
+    --error: #f87171;
+    --chart-1: #00a4bb;
+    --chart-2: #9d3f9c;
+    --chart-3: #a65003;
+    --chart-4: #0baa92;
+    --chart-5: #966ee2;
+    --chart-other: #94a3b8;
+    --chart-shade-1: #c7d2fe;
+    --chart-shade-2: #a5b4fc;
+    --chart-shade-3: #818cf8;
+    --chart-shade-4: #6366f1;
+    --chart-shade-5: #4338ca;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #09090b;                /* near-black canvas */
+  --panel: #18181b;               /* slightly lighter: the raised cards */
+  --border: #27272a;
+  --foreground: #f9fafb;
+  --control-pressed-foreground: #ffffff;
+  --secondary: #a1a1aa;
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-foreground);
+  --accent: #60a5fa;
+  --nav-hover: #1e2a3b;
+  --table-header: color-mix(in srgb, var(--foreground) 7%, var(--panel));
+  --row-hover: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  --table-selection-text: var(--accent);
+  --accent-foreground: #0b1120;
+  --good: #4ade80;
+  --warning: #facc15;
+  --error: #f87171;
+  --chart-1: #00a4bb;
+  --chart-2: #9d3f9c;
+  --chart-3: #a65003;
+  --chart-4: #0baa92;
+  --chart-5: #966ee2;
+  --chart-other: #94a3b8;
+  --chart-shade-1: #c7d2fe;
+  --chart-shade-2: #a5b4fc;
+  --chart-shade-3: #818cf8;
+  --chart-shade-4: #6366f1;
+  --chart-shade-5: #4338ca;
+}
+
+/* Base document styling every shell shares — kept here so index.html carries
+ * no <style> block of its own. */
+/* The viewport unit is set ONCE, here — everything below sizes in % / flex / fr.
+ * Dynamic units on purpose: on mobile `vh` is the *largest* viewport (it ignores
+ * the retracting browser chrome), so a `100vh` document is taller than the visible
+ * area and a bottom bar ends up below the fold with a phantom page scroll. `dvh`
+ * tracks the chrome as it collapses; on desktop it is identical to `vh`. */
+/* Letter-spacing, per script.
+ *
+ * The uppercase micro-labels track a little wider because at 11px that is what
+ * makes them legible. In a cursive script it does the opposite: Arabic, Persian
+ * and Urdu JOIN their letters, so adding tracking pulls the joins apart and the
+ * word stops being a word. Indic and Thai clusters suffer the same way.
+ *
+ * `--tracking` is deliberately left UNSET here, so every site keeps its own
+ * hand-tuned value as the `var()` fallback and nothing changes for Latin text.
+ * Setting it to `normal` for one language overrides all of them at once — one
+ * token, one rule, no per-component `:lang()` selectors that a new component
+ * would forget to add.
+ *
+ * Custom properties inherit through shadow boundaries and `lang` inherits from
+ * the host, so this reaches every component without any of them knowing. */
+:root:lang(ar), :root:lang(fa), :root:lang(ur),
+:root:lang(he), :root:lang(hi), :root:lang(bn), :root:lang(th) {
+  --tracking: normal;
+}
+
+html, body { margin: 0; height: 100dvh; width: 100dvw; }
+body {
+  font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}

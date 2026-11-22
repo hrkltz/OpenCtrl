@@ -10,6 +10,7 @@ class TwoWire {
 public:
     int channel = -1;
     int beginSDA = -1, beginSCL = -1;
+    uint32_t clock = 0, transactionMicroseconds = 0;
     bool missingHub = false, shortRead = false;
     unsigned transmissionFailures = 0;
     std::set<int> missingChannels;
@@ -17,7 +18,7 @@ public:
     std::map<std::pair<int,uint8_t>, Registers> devices;
     std::vector<uint8_t> selections;
     bool begin(int sda = SDA, int scl = SCL) { beginSDA = sda; beginSCL = scl; return true; }
-    void setClock(uint32_t) {}
+    void setClock(uint32_t value) { clock = value; }
     void setTimeOut(uint16_t) {}
     void beginTransmission(uint8_t value) { address = value; transmission.clear(); }
     size_t write(uint8_t value) { transmission.push_back(value); return 1; }
@@ -25,12 +26,14 @@ public:
         transmission.insert(transmission.end(), data, data + length); return length;
     }
     uint8_t endTransmission(bool = true) {
+        delayMicroseconds(transactionMicroseconds);
         if (transmissionFailures) { --transmissionFailures; return 4; }
         if (address == 0x70) {
             if (missingHub || transmission.size() != 1) return 2;
             const uint8_t mask = transmission[0];
-            if (!mask || (mask & (mask - 1))) return 3;
+            if (mask & (mask - 1)) return 3;
             selections.push_back(mask);
+            channel = -1; // Mask 0 closes every channel, leaving only the direct bus.
             for (int i = 0; i < 8; ++i) if (mask == (1 << i)) channel = i;
             return 0;
         }
@@ -41,6 +44,7 @@ public:
         return 0;
     }
     size_t requestFrom(uint8_t value, uint8_t length) {
+        delayMicroseconds(transactionMicroseconds);
         received.clear();
         if (missingChannels.count(channel) || !devices.count({channel,value})) return 0;
         const auto& bytes = devices[{channel,value}][reg];

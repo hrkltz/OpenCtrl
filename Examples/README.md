@@ -1,10 +1,8 @@
 # OpenCtrl / Examples
 
-Concrete examples live here. Keep examples focused on a specific input surface or interaction pattern, and put reusable platform code in `../Source`. Firmware examples use their core as library instead of copying its files.
+Concrete examples live here. Each example is one firmware that covers a whole class of input, configured at runtime rather than by flashing variants. Put reusable platform code in `../Source` and hardware libraries in `../Libraries`. Firmware examples use their core as library instead of copying its files.
 
 ## Examples
 
 - `WebController`: phone friendly web views for all HID inputs, with USB, Bluetooth LE, and mixed profile configurations, including two independent mice.
-- `Steering001Controller`: steering wheel prototype built on the XIAO ESP32S3 core plus steering-specific sensor code.
-- `FlyController`: flight axes and buttons from two M5Stack Joystick2 units, over USB or BLE.
-- `DriveController`: steering, accelerator/brake, and shift buttons from two M5Stack Joystick2 units, over USB or BLE.
+- `M5StackController`: M5Stack Joystick2, Encoder, and Scroll units on any PaHub port. The settings page shows the hub: select a port, choose the unit connected to it, set it up, and assign gamepad, mouse, or keyboard inputs to its elements. Includes a port scanner, over USB or BLE.

@@ -1,16 +1,11 @@
 #include "HTTPServerUtil.hpp"
-#include "HIDTransportBackend.hpp"
 #include "HIDUtil.hpp"
-#include "DisplayUtil.hpp"
 #include <WiFi.h>
-#include <USBCDC.h>
-#include <esp_random.h>
 #include <freertos/semphr.h>
 #include <cctype>
 
 namespace {
 AsyncWebServer server(80);
-char token[3] = {};
 String owner;
 uint32_t lastSeen = 0;
 constexpr uint32_t sessionTimeout = 2000;
@@ -18,23 +13,14 @@ SemaphoreHandle_t sessionMutex = nullptr;
 
 void respond(AsyncWebServerRequest* request, int status) {
     const char* message = status == 204 ? "" : status == 200 ? "OK\n" : status == 400 ? "Invalid report\n" :
-        status == 401 ? "Pair with the controller first\n" : status == 409 ? "Controller is in use\n" :
+        status == 409 ? "Controller is in use\n" :
         status == 404 ? "HID profile unavailable\n" : "HID transport unavailable; reconnect and try again\n";
     auto* response = request->beginResponse(status, "text/plain", message);
     response->addHeader("Access-Control-Allow-Origin", "*");
     response->addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    response->addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-OpenCtrl-Session");
+    response->addHeader("Access-Control-Allow-Headers", "Content-Type, X-OpenCtrl-Session");
     response->addHeader("Cache-Control", "no-store");
     request->send(response);
-}
-
-bool authenticated(AsyncWebServerRequest* request) {
-    const String auth = request->header("Authorization");
-    const size_t tokenLength = strlen(token);
-    if (auth.length() != 7 + tokenLength || !auth.startsWith("Bearer ") || !tokenLength) return false;
-    uint8_t difference = 0;
-    for (size_t i = 0; i < tokenLength; ++i) difference |= auth[i + 7] ^ token[i];
-    return difference == 0;
 }
 
 void expireSession() {
@@ -46,7 +32,6 @@ void expireSession() {
 }
 
 int acquire(AsyncWebServerRequest* request) {
-    if (!authenticated(request)) return 401;
     const String session = request->header("X-OpenCtrl-Session");
     if (session.length() != 32) return 400;
     for (char c : session) if (!isxdigit(static_cast<unsigned char>(c))) return 400;
@@ -61,18 +46,10 @@ int acquire(AsyncWebServerRequest* request) {
 }
 
 void service(void*) {
-    bool consoleConnected = false;
     for (;;) {
         xSemaphoreTake(sessionMutex, portMAX_DELAY);
         expireSession();
         HIDUtil::Service();
-        auto& pairingConsole = HIDUSBConsole();
-        const bool connected = bool(pairingConsole);
-        if (connected && !consoleConnected) {
-            pairingConsole.print("OpenCtrl pairing code: ");
-            pairingConsole.println(token);
-        }
-        consoleConnected = connected;
         xSemaphoreGive(sessionMutex);
         vTaskDelay(pdMS_TO_TICKS(2));
     }
@@ -80,7 +57,6 @@ void service(void*) {
 }
 
 AsyncWebServer& HTTPServerUtil::GetServer() { return server; }
-const char* HTTPServerUtil::GetPairingToken() { return token; }
 
 bool HTTPServerUtil::ReadInt(JsonObject doc, const char* key, int minimum, int maximum,
                              int& value, int fallback) {
@@ -127,15 +103,8 @@ bool HTTPServerUtil::Init() {
     if (sessionMutex) return false;
     sessionMutex = xSemaphoreCreateMutex();
     if (!sessionMutex) return false;
-    snprintf(token, sizeof(token), "%u", static_cast<unsigned>(esp_random() % 100));
-    HIDUSBConsole().begin(115200);
-    Serial.print("OpenCtrl pairing code: ");
-    Serial.println(token);
-    DisplayUtil::Print(6, "Pairing code");
-    DisplayUtil::Print(7, token);
-
     server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-        request->send(200, "text/plain", "OpenCtrl: pair using the code on the display or USB serial console.\n");
+        request->send(200, "text/plain", "OpenCtrl: controller API ready.\n");
     });
     AddJsonRoute("/heartbeat", [](JsonObject) { return HIDUtil::Ready() ? 200 : 503; });
     AddJsonRoute("/release", [](JsonObject) {

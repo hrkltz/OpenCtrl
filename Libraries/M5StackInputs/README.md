@@ -1,6 +1,6 @@
 # OpenCtrl / Libraries / M5StackInputs
 
-Optional Arduino-ESP32 3.x library for M5Stack input components. It uses Arduino `Wire`, GPIO/ADC, and the ESP32 RMT peripheral, with no additional vendor or LED library. It has no HID, Bluetooth, WiFi, HTTP, display, or storage dependency. FlyController and DriveController continue using their existing two-Joystick2 setup.
+Optional Arduino-ESP32 3.x library for M5Stack input components. It uses Arduino `Wire`, GPIO/ADC, and the ESP32 RMT peripheral, with no additional vendor or LED library. It has no HID, Bluetooth, WiFi, HTTP, display, or storage dependency. [M5StackController](../../Examples/M5StackController) maps Joystick2, Encoder, and Scroll units on any of the six PaHub ports to HID inputs.
 
 ## Supported units
 
@@ -76,7 +76,7 @@ Fader and Angle share `ReadRaw(uint16_t&)` in **millivolts**, `Read(float&)` in 
 
 For a full-travel pedal/slider from a normalized axis, use `(axis + 1) / 2` to get [0, 1]. `PositiveTrigger` uses only the positive half of a centered stick; it is not a full-travel slider conversion. `SignedAxis` converts [-1, +1] to [-127, +127]. Invalid ranges and non-finite deadzones are rejected.
 
-The separate [ControllerCalibration library](../ControllerCalibration) can bind `&fader.Calibration()` / `&angle.Calibration()` with millivolt raw bounds, alongside Joystick2's axis settings. Feed it raw readings from the controller loop. That library owns the website and NVS persistence. The supplied Fly/Drive calibration pages retain their four joystick axes; adding physical units requires explicit bindings and action mappings in the consuming project.
+The separate [ControllerCalibration library](../ControllerCalibration) can bind `&fader.Calibration()` / `&angle.Calibration()` with millivolt raw bounds, alongside Joystick2's axis settings. Feed it raw readings from the controller loop. That library owns the settings API and NVS persistence. M5StackController binds Joystick2 X/Y and an encoder turn position on all six PaHub ports. Key, Fader, and Angle require explicit readers and binding sources in the consuming project.
 
 ### Encoders
 
@@ -94,7 +94,7 @@ Encoder/Scroll `LEDs().SetColor(index, color)` writes immediately via I2C. Joyst
 
 ## Example and tests
 
-[examples/Units/Units.ino](examples/Units/Units.ino) exercises all six models with serial readings and low-brightness RGB output. Its pins and hub channels are a concrete XIAO ESP32S3 wiring example, independent of the Fly/Drive HID mappings. Edit them to match your hardware.
+[examples/Units/Units.ino](examples/Units/Units.ino) exercises all six models with serial readings and low-brightness RGB output. Its pins and hub channels are a concrete XIAO ESP32S3 wiring example, independent of M5StackController's HID bindings. Edit them to match your hardware.
 
 ```bash
 # From Source/XIAOESP32S3Core, using this project's Arduino CLI configuration:
@@ -107,7 +107,7 @@ arduino-cli --config-file arduino-cli.yaml compile \
 bash Test/RunM5Inputs.sh
 ```
 
-Host tests cover all six units, register widths, button polarity, hub isolation, failures and recovery, rollover, button bounce and timer wrap, millivolt calibration, RGB byte/signal encoding, bounds, and RMT cleanup. They also exercise the actual Fly/Drive USB/BLE sketches. Real wiring, ADC travel, LED timing, unit firmware variants, and target-host behavior still need hardware validation.
+Host tests cover all six units, register widths, button polarity, hub isolation, failures and recovery, rollover, button bounce and timer wrap, millivolt calibration, RGB byte/signal encoding, bounds, and RMT cleanup. They also exercise the actual M5StackController USB/BLE sketch. Real wiring, ADC travel, LED timing, unit firmware variants, and target-host behavior still need hardware validation.
 
 ## Protocol references
 

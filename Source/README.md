@@ -4,5 +4,5 @@ Reusable source modules live here. A source module should provide the shared run
 
 ## Modules
 
-- `XIAOESP32S3Core`: XIAO ESP32S3 firmware exposing composable standard and custom HID profiles over USB and Bluetooth LE, controlled through an authenticated web API. Also used as library by the XIAO ESP32S3 examples.
+- `XIAOESP32S3Core`: XIAO ESP32S3 firmware exposing composable standard and custom HID profiles over USB and Bluetooth LE, controlled through a session-based web API. Also used as library by the XIAO ESP32S3 examples.
 - `SoftCore`: placeholder for host/software-only controller logic.

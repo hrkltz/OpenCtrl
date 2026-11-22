@@ -4,4 +4,4 @@ Optional Arduino libraries shared by examples. Hardware adapters belong here, in
 
 - `M5StackInputs`: Key, Scroll, Encoder, Joystick2, Fader, and Angle adapters, sharing GPIO/analog/I2C helpers, optional PaHub routing, calibration, and RGB outputs.
 
-- `ControllerCalibration`: shared calibration page, live readings, and persistent settings for hardware controllers.
+- `ControllerCalibration`: settings API for hardware controllers: calibration, live readings, filtering, input-to-HID bindings, and persistent storage.

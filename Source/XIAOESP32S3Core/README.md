@@ -47,19 +47,14 @@ arduino-cli --config-file arduino-cli.yaml lib install U8g2@2.36.19
 ## Usage
 
 Build and upload from the root with `./BuildAndDeploy.sh --project Source/XIAOESP32S3Core`.
-The device displays its IP address and a new numeric pairing code from 0 to 99 on the last OLED line. The code is also printed when a USB serial console connects. Enter it in the web page's pairing bar. Pair again after restarting the board. The code is not exposed over HTTP.
+The device displays its IP address. Open that address to use the controller; no HTTP pairing code is required. Anyone who can reach the device can control its attached host, so use this unencrypted HTTP development firmware on a trusted local network.
 
-The short code is easy to guess and is only suitable for a trusted local network. Do not expose the controller to an untrusted network; the HTTP API is unencrypted.
+All POST routes require these headers:
 
-All POST routes require these headers. The `Authorization` Bearer value is the displayed 0–99 pairing code:
-
-- `Authorization: Bearer <pairing token>`
 - `X-OpenCtrl-Session: <32 hexadecimal characters identifying this controller session>`
 - `Content-Type: application/json`
 
-The first paired controller owns the session. A different session receives `409` until the owner releases or its lease expires. Send `/heartbeat` with `{}` every 500 ms while controlling the device. After 2 seconds without a valid request, WiFi loss, or loss of all HID connections, the firmware releases all profiles. Each transport also resets its own state on disconnect and retries neutral reports when it recovers. Losing one connection does not stop the other. Send `/release` with `{}` to release and relinquish the session immediately. This safety task runs independently of the sketch's loop.
-
-Pairing grants keyboard and power-control access to the attached host. Use this plain HTTP development firmware on a trusted network; the token authenticates requests but does not encrypt them.
+The first browser session owns the controls. A different session receives `409` until the owner releases or its lease expires. Send `/heartbeat` with `{}` every 500 ms while controlling the device. After 2 seconds without a valid request, WiFi loss, or loss of all HID connections, the firmware releases all profiles. Each transport also resets its own state on disconnect and retries neutral reports when it recovers. Losing one connection does not stop the other. Send `/release` with `{}` to release and relinquish the session immediately. This safety task runs independently of the sketch's loop.
 
 The standard profiles expose:
 
@@ -70,7 +65,7 @@ The standard profiles expose:
 - `/system`: `{"usage": int}` (0 release, 1 power off, 2 sleep, 3 wake), when enabled.
 - `/hid/report`: `{"id": int,"data": [byte, ...]}` sends any registered Input report. The payload must match the descriptor's exact length and excludes the report ID byte. Optional `"transport":"usb"` or `"transport":"bluetooth"` restricts the send to that configured transport; omission sends through the instance's configured transports.
 
-Missing fields use their documented defaults. Wrong JSON types, ranges, oversized key arrays, and non-object bodies return `400`. Missing/wrong pairing codes return `401`. Unavailable raw profiles return `404`; an unavailable HID transport or failed transmission returns `503`. On a transmission failure, reconnect and start from neutral rather than replaying old commands.
+Missing fields use their documented defaults. Wrong JSON types, ranges, oversized key arrays, and non-object bodies return `400`. Unavailable raw profiles return `404`; an unavailable HID transport or failed transmission returns `503`. On a transmission failure, reconnect and start from neutral rather than replaying old commands.
 
 The core firmware enables keyboard, mouse, and gamepad over USB by default. The radio starts only when a Bluetooth profile is registered. Pen is provided by the WebController example; touch can be added as a custom profile.
 
@@ -80,7 +75,7 @@ Examples keep their specific code and use this folder as a library. Put the sket
 
 `HIDUtil::Init()` enables the three standard profiles. Use `HIDUtil::Init(HIDUtil::All)` to include consumer and system controls, a bitwise combination of `HIDUtil::Device` flags to select profiles, or `HIDUtil::Init(0)` for custom profiles only. Check its boolean return before starting the server. A third argument selects the standard profiles' transport, for example `HIDUtil::Init(HIDUtil::Standard, {}, HIDTransport::Bluetooth)` or `HIDTransport::Both`. An optional second `HIDProfileCallbacks` argument handles standard-profile events such as keyboard LED Output reports (ID 1).
 
-Register custom profiles in `setup()` **before** `HIDUtil::Init()`. The build scripts select USB-OTG with CDC-on-boot disabled so descriptors are registered before USB enumeration. The core still provides a USB CDC console for the pairing code. Changing profiles requires a restart and USB re-enumeration; Bluetooth hosts may require removing their cached pairing and pairing again. When the standard keyboard is enabled, the interface also supports BIOS boot-keyboard mode. Non-keyboard reports pause while the host requests boot protocol and synchronize back to neutral when report protocol resumes.
+Register custom profiles in `setup()` **before** `HIDUtil::Init()`. The build scripts select USB-OTG with CDC-on-boot disabled so descriptors are registered before USB enumeration. The core still provides a USB CDC console. Changing profiles requires a restart and USB re-enumeration; Bluetooth hosts may require removing their cached pairing and pairing again. When the standard keyboard is enabled, the interface also supports BIOS boot-keyboard mode. Non-keyboard reports pause while the host requests boot protocol and synchronize back to neutral when report protocol resumes.
 
 `RegisterProfile(descriptor, length, neutralReports, callbacks)` copies the descriptor and validates its report sizes. Each Input report must have exactly one neutral payload, for example `{{reportId, {0, 0}}}` for a two-byte report. Use safe device-specific neutral values, including released contact switches and neutral axes. The firmware uses these values on timeout and transport recovery. An optional final `HIDTransport` argument routes this custom profile (USB by default).
 
@@ -120,10 +115,10 @@ Sends skip disconnected or inactive routes and succeed when at least one selecte
 
 The BLE backend uses NimBLE-Arduino 2.5.1 with ESP32 Arduino 3.3.12. The bundled Arduino BLE wrapper drops repeated characteristic UUIDs on NimBLE, which breaks composite HID reports ([upstream issue](https://github.com/espressif/arduino-esp32/issues/12951)); NimBLE-Arduino supports these correctly. No device-specific BLE keyboard/mouse wrapper is needed. It exposes HID Report Map, typed Report characteristics with Report Reference descriptors, HID Information, Control Point, Device Information/PnP, and Battery services. The battery level is fixed at 100 for this externally powered firmware; it is not a battery measurement. Battery-powered hardware needs a real gauge integration before relying on this value.
 
-Pair **OpenCtrl** in the target host's Bluetooth settings. Reports require an encrypted connection and Input subscriptions. Bluetooth pairing uses bonded Secure Connections with Just Works (no MITM protection), separately from the HTTP pairing code. A failed authentication disconnects the peer. The backend supports one connected BLE host, one advertised peripheral identity, and multiple HID collections/report IDs within that peripheral. It supports report protocol, not Bluetooth Classic or BLE boot-keyboard reports. USB retains its existing BIOS boot-keyboard support when the standard keyboard is selected.
+Pair **OpenCtrl** in the target host's Bluetooth settings. Reports require an encrypted connection and Input subscriptions. Bluetooth pairing uses bonded Secure Connections with Just Works (no MITM protection). A failed authentication disconnects the peer. The backend supports one connected BLE host, one advertised peripheral identity, and multiple HID collections/report IDs within that peripheral. It supports report protocol, not Bluetooth Classic or BLE boot-keyboard reports. USB retains its existing BIOS boot-keyboard support when the standard keyboard is selected.
 
 USB and BLE can run simultaneously against the same host or different hosts. You can also register several mice on one transport. The host decides how to expose their collections: desktop systems usually merge mouse movement into one cursor, while applications using device-specific input can distinguish devices. Two HID mice do not guarantee two cursors or independently advertised Bluetooth devices.
 
-To add authenticated endpoints, call `HTTPServerUtil::AddJsonRoute(uri, handler)` before `HTTPServerUtil::Init()`. The handler accepts a `JsonObject` and returns an HTTP status. It shares the pairing, session, watchdog, CORS, and error handling of core routes. Use `ReadInt`, `ReadBool`, and `ReadButtons` to validate JSON values before narrowing them. `GetServer()` remains available for static GET routes, which are public; do not register unprotected input routes directly.
+To add session-managed endpoints, call `HTTPServerUtil::AddJsonRoute(uri, handler)` before `HTTPServerUtil::Init()`. The handler accepts a `JsonObject` and returns an HTTP status. It shares the session, watchdog, CORS, and error handling of core routes. Use `ReadInt`, `ReadBool`, and `ReadButtons` to validate JSON values before narrowing them. `GetServer()` remains available for static GET routes, which are public; register input routes through this helper to retain session ownership and timeout releases.
 
-`HTTPServerUtil::AddMouseRoute(uri, reportId)` binds another registered mouse instance to the standard mouse JSON schema, using the same validation and authenticated session handling as `/mouse`. WebController uses it for `/mouse/secondary` in mixed mode.
+`HTTPServerUtil::AddMouseRoute(uri, reportId)` binds another registered mouse instance to the standard mouse JSON schema, using the same validation and session handling as `/mouse`. WebController uses it for `/mouse/secondary` in mixed mode.

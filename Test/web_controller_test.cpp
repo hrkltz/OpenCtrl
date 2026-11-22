@@ -12,16 +12,10 @@ void DisplayUtil::Init() {}
 void DisplayUtil::Print(uint8_t, const char*) {}
 void DisplayUtil::PrintError(const char*) { assert(false && "WebController initialization failed"); }
 void WiFiUtil::Connect() {}
-static void assertPairingCode() {
-    const char* code = HTTPServerUtil::GetPairingToken();
-    assert(code && code[0] && std::strlen(code) <= 2);
-    for (const char* digit = code; *digit; ++digit) assert(*digit >= '0' && *digit <= '9');
-    assert(std::strtol(code, nullptr, 10) <= 99);
-}
 
-static int call(const char* path, const char* json, bool authorized = true) {
+
+static int call(const char* path, const char* json) {
     AsyncWebServerRequest req;
-    if (authorized) req.headers["Authorization"] = std::string("Bearer ") + HTTPServerUtil::GetPairingToken();
     req.headers["X-OpenCtrl-Session"] = "11111111111111111111111111111111";
     JsonDocument document;
     assert(!deserializeJson(document, json));
@@ -40,7 +34,6 @@ static void checkRoute(const char* path, const char* json, uint8_t id, HIDTransp
 
 int main() {
     setup();
-    assertPairingCode();
     const bool bluetooth = OPENCTRL_WEB_MODE != 1;
     assert(BLEMock::initialized == unsigned(bluetooth));
     assert(HIDUtil::Transports(1) == WebConfig::primaryTransport);
@@ -80,7 +73,7 @@ int main() {
     checkRoute("/system", "{\"usage\":3}", 5, WebConfig::primaryTransport);
     checkRoute("/pen", "{\"tip\":true,\"inRange\":true,\"x\":100,\"y\":200,\"pressure\":300}", 7, WebConfig::penTransport);
     if (WebConfig::secondaryMouse) {
-        assert(call("/mouse/secondary", "{\"dx\":1}", false) == 401);
+        assert(call("/mouse/secondary", "{\"dx\":1}") == 200);
         assert(call("/mouse/secondary", "{\"dx\":4097}") == 400);
         assert(call("/mouse/secondary", "{\"buttons\":32}") == 400);
         checkRoute("/mouse/secondary", "{\"dx\":12,\"buttons\":2}", 8, HIDTransport::Bluetooth);

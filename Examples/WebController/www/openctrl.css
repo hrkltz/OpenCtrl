@@ -32,8 +32,14 @@
 }
 html, body {
     margin: 0;
+    /* Pages may scroll, but never zoom (pinch or double-tap) or pull to refresh. */
+    touch-action: pan-x pan-y;
+    overscroll-behavior: none;
 }
+/* Keep content clear of notches, camera cutouts, rounded corners, and the home indicator (viewport-fit=cover).
+   The header still spans the full width and fills the area under the status bar. */
 body {
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     font-family: system-ui, -apple-system, sans-serif;
     background-color: var(--background);
     color: var(--text);
@@ -43,7 +49,8 @@ header {
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    padding: 6px 12px;
+    margin: 0 calc(-1 * env(safe-area-inset-right)) 0 calc(-1 * env(safe-area-inset-left));
+    padding: calc(6px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 6px calc(12px + env(safe-area-inset-left));
     background-color: #333333;
     color: white;
     font-size: 15px;
@@ -81,19 +88,7 @@ input[type=text], input[type=password] {
     padding: 10px;
     font-size: 16px;
 }
-.pairing {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 12px;
-    font-size: 13px;
-    background: var(--surface);
-}
-.pairing input { width: min(65vw, 320px); padding: 6px; }
-.pairing button { padding: 6px 12px; }
+
 .row {
     display: flex;
     flex-wrap: wrap;

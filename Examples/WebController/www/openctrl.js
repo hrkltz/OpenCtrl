@@ -51,16 +51,13 @@ async function loadControllerInfo() {
         document.querySelectorAll('[data-primary-mouse]').forEach((element) => element.hidden = !secondaryMouse);
         document.querySelectorAll('[data-mouse-name]').forEach((element) =>
             element.textContent = secondaryMouse ? 'Bluetooth mouse' : info.primaryMouse);
-    } catch (error) { /* Pairing/heartbeat handles network errors. */ }
+    } catch (error) { /* Heartbeat handles network errors. */ }
 }
 
 function setStatus(text) {
     document.querySelectorAll('[data-status]').forEach((element) => element.textContent = text);
 }
 
-const tokenKey = `openctrl-token:${deviceUrl || location.origin}`;
-let pairingToken = '';
-try { pairingToken = localStorage.getItem(tokenKey) || ''; } catch (error) { /* Optional storage. */ }
 function newSession() {
     return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -77,7 +74,7 @@ async function request(path, body, session = sessionId, keepalive = false) {
     try {
         return await fetch(`${deviceUrl}/${path}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pairingToken}`,
+            headers: { 'Content-Type': 'application/json',
                 'X-OpenCtrl-Session': session },
             body: JSON.stringify(body), signal: controller.signal, keepalive,
         });
@@ -115,8 +112,7 @@ async function pumpReports() {
                 if (version !== generation) { report.resolve(false); continue; }
                 if (!response.ok) {
                     report.resolve(false);
-                    stopSession(response.status === 401 ? 'Pair with controller' :
-                        response.status === 409 ? 'Controller is in use' : `Report failed (${response.status})`);
+                    stopSession(response.status === 409 ? 'Controller is in use' : `Report failed (${response.status})`);
                     break;
                 }
                 setStatus('Connected');
@@ -134,7 +130,7 @@ async function pumpReports() {
 // Preserve discrete transitions; only replace adjacent continuous states with
 // identical buttons/contact flags. Every queued body is an immutable snapshot.
 function post(path, body, transition = null) {
-    if (!sessionActive) { setStatus('Pair with controller'); return Promise.resolve(false); }
+    if (!sessionActive) { setStatus('Connecting…'); return Promise.resolve(false); }
     const snapshot = JSON.parse(JSON.stringify(body));
     const previous = reports[reports.length - 1];
     if (transition !== null && previous?.path === path && previous.transition === transition) {
@@ -158,7 +154,7 @@ function createSender(path, state) {
 }
 
 async function heartbeat() {
-    if (heartbeatBusy || !pairingToken || document.hidden) return;
+    if (heartbeatBusy || document.hidden) return;
     heartbeatBusy = true;
     const version = generation;
     try {
@@ -169,8 +165,7 @@ async function heartbeat() {
             sessionActive = true;
             setStatus('Connected');
         } else {
-            stopSession(response.status === 401 ? 'Pair with controller' :
-                response.status === 409 ? 'Controller is in use' : 'Controller unavailable');
+            stopSession(response.status === 409 ? 'Controller is in use' : 'Controller unavailable');
         }
     } catch (error) {
         if (version === generation) stopSession('Offline — controls released');
@@ -179,18 +174,7 @@ async function heartbeat() {
     }
 }
 
-function addPairingControls() {
-    const form = document.createElement('form');
-    form.className = 'pairing';
-    form.innerHTML = '<span data-connection-mode></span><label>Pair with controller <input type=password inputmode=numeric autocomplete=off maxlength=2 placeholder="Code 0–99 from display or USB console" aria-label="Pairing code" required pattern="[0-9]{1,2}"></label> <button>Pair</button>';
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        stopSession('Pairing…');
-        pairingToken = String(Number(form.querySelector('input').value.trim()));
-        try { localStorage.setItem(tokenKey, pairingToken); } catch (error) { /* Optional storage. */ }
-        heartbeat();
-    });
-    document.querySelector('header').after(form);
+function startHeartbeat() {
     heartbeat();
     setInterval(heartbeat, 500);
 }
@@ -549,9 +533,20 @@ function resetControls() {
 
 // --- Binding ---
 document.addEventListener('contextmenu', (event) => {
-    // Prevent long-press menus on controls.
-    if (event.target.closest('button, [data-touchpad], [data-scrollpad], [data-pen], [data-stick], [data-fader], [data-steering]')) event.preventDefault();
+    // Prevent long-press menus on controls and anywhere on full screen views, except in text fields.
+    if (event.target.closest('input')) return;
+    if (document.body.classList.contains('view') ||
+        event.target.closest('button, [data-touchpad], [data-scrollpad], [data-pen], [data-stick], [data-fader], [data-steering]')) event.preventDefault();
 });
+
+// Using several controls at once (e.g. steering and gas) must not zoom or scroll the page, which would also
+// cancel the pointers of the controls. Safari ignores user-scalable=no, so its pinch gesture is blocked here.
+for (const type of ['gesturestart', 'gesturechange']) {
+    document.addEventListener(type, (event) => event.preventDefault());
+}
+document.addEventListener('touchmove', (event) => {
+    if (event.touches.length > 1 || document.body.classList.contains('view')) event.preventDefault();
+}, { passive: false });
 
 document.addEventListener('DOMContentLoaded', () => {
     const each = (selector, bind) => document.querySelectorAll(selector).forEach(bind);
@@ -559,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sessionActive) handler(element);
     }));
 
-    addPairingControls();
+    startHeartbeat();
     loadControllerInfo();
     each('[data-hatpad]', fillHatpad);
 

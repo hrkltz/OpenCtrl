@@ -38,10 +38,13 @@ core_cli() {
     (cd "$core_dir" && arduino-cli --config-file arduino-cli.yaml "$@")
 }
 
-# Write WebFiles.hpp with one byte array per file of a www folder and a table to serve them.
+# Write WebFiles.hpp with one byte array per file of a www folder, including subfolders, and a
+# table to serve them. Text files are stored gzipped and served with Content-Encoding: gzip.
+# Hidden files and Markdown notes are not embedded.
 generate_web_files() {
-    local www_files=("$1"/*)
-    local i name content_type
+    local www_files=() file
+    while IFS= read -r file; do www_files+=("$file"); done < <(cd "$1" && find . -type f ! -name '.*' ! -name '*.md' | sed 's|^\./||' | LC_ALL=C sort)
+    local i content_type gzip
     echo "// Generated from www/ by Compile.sh. Do not edit."
     echo "#pragma once"
     echo "#include <stddef.h>"
@@ -52,25 +55,31 @@ generate_web_files() {
     echo "  const char* contentType;"
     echo "  const uint8_t* data;"
     echo "  size_t size;"
+    echo "  bool gzip;"
     echo "};"
     for i in "${!www_files[@]}"; do
         echo ""
         echo "static const uint8_t WEB_FILE_$i[] = {"
-        xxd -i < "${www_files[$i]}" || return 1
+        case "${www_files[$i]}" in
+            *.png) xxd -i < "$1/${www_files[$i]}" || return 1 ;;
+            *) gzip -9 -n -c < "$1/${www_files[$i]}" | xxd -i || return 1 ;;
+        esac
         echo "};"
     done
     echo ""
     echo "static const WebFile WEB_FILES[] = {"
     for i in "${!www_files[@]}"; do
-        name="$(basename "${www_files[$i]}")"
-        case "$name" in
+        gzip=true
+        case "${www_files[$i]}" in
             *.html) content_type="text/html" ;;
             *.css) content_type="text/css" ;;
             *.js) content_type="text/javascript" ;;
             *.svg) content_type="image/svg+xml" ;;
+            *.png) content_type="image/png"; gzip=false ;;
+            *.webmanifest) content_type="application/manifest+json" ;;
             *) content_type="application/octet-stream" ;;
         esac
-        echo "  {\"/$name\", \"$content_type\", WEB_FILE_$i, sizeof(WEB_FILE_$i)},"
+        echo "  {\"/${www_files[$i]}\", \"$content_type\", WEB_FILE_$i, sizeof(WEB_FILE_$i), $gzip},"
     done
     echo "};"
 }

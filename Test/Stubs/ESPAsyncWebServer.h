@@ -26,13 +26,29 @@ public:
     void send(AsyncWebServerResponse* response) { status=response->status; body=response->body; delete response; }
     void send(int code, const char*, const String& content) { status=code; body=content; }
 };
+// Like ESPAsyncWebServer: a plain URI also matches every path below it; exact() does not.
+struct AsyncURIMatcher {
+    std::string uri;
+    bool exactOnly = false;
+    AsyncURIMatcher(const char* value) : uri(value) {}
+    static AsyncURIMatcher exact(const char* value) { AsyncURIMatcher matcher(value); matcher.exactOnly = true; return matcher; }
+    bool Matches(const std::string& path) const { return path == uri || (!exactOnly && path.rfind(uri + "/", 0) == 0); }
+};
 class AsyncWebServer {
 public:
     using JsonHandler = std::function<void(AsyncWebServerRequest*, JsonVariant&)>;
     inline static std::map<std::string,JsonHandler> routes;
     inline static std::map<std::pair<std::string,int>,std::function<void(AsyncWebServerRequest*)>> plainRoutes;
+    inline static std::vector<std::pair<AsyncURIMatcher,int>> order; // Registration order, as the server tries them.
     explicit AsyncWebServer(int) {}
-    void on(const char* uri, int, JsonHandler handler) { routes[uri] = handler; }
-    void on(const char* uri, int method, std::function<void(AsyncWebServerRequest*)> handler) { plainRoutes[{uri,method}] = handler; }
+    void on(AsyncURIMatcher uri, int method, JsonHandler handler) { routes[uri.uri] = handler; order.push_back({uri, method}); }
+    void on(AsyncURIMatcher uri, int method, std::function<void(AsyncWebServerRequest*)> handler) {
+        plainRoutes[{uri.uri,method}] = handler; order.push_back({uri, method});
+    }
+    // The route a request reaches: the first registered one that matches its path and method.
+    static std::string Resolve(const std::string& path, int method) {
+        for (const auto& [matcher, routeMethod] : order) if (routeMethod == method && matcher.Matches(path)) return matcher.uri;
+        return "";
+    }
     void begin() {}
 };

@@ -132,10 +132,10 @@ test('network failure clears input and attempts a session release', async () => 
     assert.equal(c.sent[1].path, 'release');
 });
 
-test('every request carries the token and session ID', async () => {
+test('every request carries a session ID without pairing', async () => {
     const c = controller();
     c.run('setGamepad({x:1})');
-    assert.equal(c.sent[0].headers.Authorization, `Bearer ${'a'.repeat(32)}`);
+    assert.equal(c.sent[0].headers.Authorization, undefined);
     assert.match(c.sent[0].headers['X-OpenCtrl-Session'], /^[0-9a-f]{32}$/);
     await c.drain();
 });
@@ -167,5 +167,14 @@ test('reconnection resets local state changed while inactive', async () => {
     assert.equal(c.run('mouse.buttons'), 0);
     assert.equal(c.run('gamepad.buttons'), 0);
     assert.equal(c.run('heldKeys.size'), 0);
+    assert.equal(c.run('sessionActive'), true);
+});
+
+test('heartbeat connects automatically without a stored code', async () => {
+    const c = controller();
+    c.run('sessionActive = false; heartbeat()');
+    assert.equal(c.sent[0].path, 'heartbeat');
+    assert.equal(c.sent[0].headers.Authorization, undefined);
+    await c.drain();
     assert.equal(c.run('sessionActive'), true);
 });
